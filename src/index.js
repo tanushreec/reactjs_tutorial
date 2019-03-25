@@ -52,6 +52,8 @@ function Square(props){
       this.state = {
         history: [{
           squares: Array(0).fill(null),
+          row: null,
+          column: null,
         }],
         xIsNext: true,
         stepNumber: 0,
@@ -63,6 +65,7 @@ function Square(props){
       const history = this.state.history.slice(0, this.state.stepNumber + 1); //Throwing away future history if we move back
       const current = history[history.length - 1];
       const squares = current.squares.slice(); //Why slice? (creating a copy of the array) -Immutability
+      let row, column;
 
       if(calculateWinner(squares) || squares[i])
       {
@@ -70,10 +73,14 @@ function Square(props){
       }
 
       squares[i] =  this.state.xIsNext ? 'X' : 'O';
+      row = parseInt(i / 3);
+      column = parseInt(i % 3);
 
       //concat() doesn't mutate original array.
       this.setState({history: history.concat([{
-        squares: squares
+        squares: squares,
+        row: row,
+        column: column
       }]), 
       xIsNext: !this.state.xIsNext,
       stepNumber: history.length
@@ -94,7 +101,8 @@ function Square(props){
 
       const moves = history.map((step, move) => {
         const desc = move ?
-        'Go to move #' + move :
+        'Go to move #' + move + ' at ('
+        + step.column + ', ' + step.row + ')' :
         'Go to game start';
         return(
           <li key={move}>
@@ -122,6 +130,7 @@ function Square(props){
               onClick={(i) => this.handleClick(i)} />
           </div>
           <div className="game-info">
+            <div><em>Moves displayed in (col, row) format.</em></div>
             <div>{status}</div>
             <ol>{moves}</ol>
           </div>
