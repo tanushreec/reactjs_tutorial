@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 function Square(props){
+  let backgroundColor = (props.isWinner) ? 'green' : 'white';
+
       return (
         <button 
           className="square" 
           onClick={props.onClick}
+          style={{backgroundColor}}
         >
           {props.value}
         </button>
@@ -14,9 +17,10 @@ function Square(props){
   }
   
   class Board extends React.Component {
-    renderSquare(key, row, column) {
+    renderSquare(key, row, column, isWinner) {
       return (<Square key={key}
         value={this.props.squares[key]}
+        isWinner={isWinner}
         onClick={() => this.props.onClick(key, row, column)}  
       />
       );
@@ -33,7 +37,14 @@ function Square(props){
 
         for(let j = 0; j < 3; j++)
         {
-          rows.push(this.renderSquare(key, i, j));
+          let isWinner = false;
+
+          if(this.props.squares.winningSquares)
+          {
+            isWinner = this.props.squares.winningSquares.includes(key);
+          }
+
+          rows.push(this.renderSquare(key, i, j, isWinner));
           key++;
         }
 
@@ -54,7 +65,7 @@ function Square(props){
       super(props);
       this.state = {
         history: [{
-          squares: Array(0).fill(null),
+          squares: Array(9).fill(null),
           row: null,
           column: null,
         }],
@@ -92,7 +103,7 @@ function Square(props){
       this.setState({history: history.concat([{
         squares: squares,
         row,
-        column
+        column,
       }]), 
       xIsNext: !this.state.xIsNext,
       stepNumber: history.length
@@ -140,9 +151,10 @@ function Square(props){
       }
 
       let status;
-
+    
       if(winner){
-        status = 'Winner:' + winner;
+        status = (winner[0] === 'draw') ? 'The game is a draw!' : 'Winner:' + winner[0];
+        current.squares.winningSquares = winner[1];
       }
       else{
         status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
@@ -196,9 +208,19 @@ function Square(props){
 
       if(squares[a] && squares[a] === squares[b] && squares[a] === squares[c])
       {
-        return squares[a];
+        return [squares[a], lines[i]];
       }
     }
 
-    return null;
+    let areMovesOver = true;
+
+    for(let i = 0; i < 9; i++)
+    {
+      if(!squares[i])
+      {
+        areMovesOver = false;
+      }
+    }
+
+    return (areMovesOver) ? ['draw'] : null;
   }
