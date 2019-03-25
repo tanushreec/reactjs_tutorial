@@ -104,9 +104,16 @@ function Square(props){
         'Go to move #' + move + ' at ('
         + step.column + ', ' + step.row + ')' :
         'Go to game start';
+
+        let fontWeight = (move === this.state.stepNumber) ? 'bold' : 'normal';
+
+        let style = {fontWeight};
+
         return(
           <li key={move}>
-            <button onClick={() => this.jumpTo(move)}>
+            <button 
+            style={style}
+            onClick={() => this.jumpTo(move)}>
             {desc}
             </button>
           </li>
