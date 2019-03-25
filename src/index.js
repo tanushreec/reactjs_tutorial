@@ -14,32 +14,35 @@ function Square(props){
   }
   
   class Board extends React.Component {
-    renderSquare(i) {
-      return (<Square 
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}  
+    renderSquare(key, row, column) {
+      return (<Square key={key}
+        value={this.props.squares[key]}
+        onClick={() => this.props.onClick(key, row, column)}  
       />
       );
     }
   
-    render() {        
+    render() {     
+      
+      let squares = [];
+      let key = 0;
+
+      for(let i = 0; i < 3; i++)
+      {
+        let rows = [];
+
+        for(let j = 0; j < 3; j++)
+        {
+          rows.push(this.renderSquare(key, i, j));
+          key++;
+        }
+
+        squares.push(<div key={i} className="board-row">{rows}</div>);
+      }
       return (
+
         <div>
-          <div className="board-row">
-            {this.renderSquare(0)}
-            {this.renderSquare(1)}
-            {this.renderSquare(2)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(3)}
-            {this.renderSquare(4)}
-            {this.renderSquare(5)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(6)}
-            {this.renderSquare(7)}
-            {this.renderSquare(8)}
-          </div>
+          {squares}
         </div>
       );
     }
@@ -57,30 +60,39 @@ function Square(props){
         }],
         xIsNext: true,
         stepNumber: 0,
+        isAscending: true,
+        toggleText: 'Sort Descending'
       }
     }
 
-    handleClick(i)
+    toggleOrder()
+    {
+      let toggleText = (this.state.isAscending) ? 'Sort Ascending' : 'Sort Descending';
+
+      this.setState({
+        isAscending: !this.state.isAscending,
+        toggleText,
+      });
+    }
+
+    handleClick(i, row, column)
     {
       const history = this.state.history.slice(0, this.state.stepNumber + 1); //Throwing away future history if we move back
       const current = history[history.length - 1];
       const squares = current.squares.slice(); //Why slice? (creating a copy of the array) -Immutability
-      let row, column;
-
+    
       if(calculateWinner(squares) || squares[i])
       {
         return;
       }
 
       squares[i] =  this.state.xIsNext ? 'X' : 'O';
-      row = parseInt(i / 3);
-      column = parseInt(i % 3);
-
+    
       //concat() doesn't mutate original array.
       this.setState({history: history.concat([{
         squares: squares,
-        row: row,
-        column: column
+        row,
+        column
       }]), 
       xIsNext: !this.state.xIsNext,
       stepNumber: history.length
@@ -120,6 +132,13 @@ function Square(props){
         );
       });
 
+      if(!this.state.isAscending)
+      {
+        moves.sort((a, b) =>{
+          return b.key - a.key;
+        })
+      }
+
       let status;
 
       if(winner){
@@ -134,12 +153,17 @@ function Square(props){
           <div className="game-board">
             <Board
               squares={current.squares}
-              onClick={(i) => this.handleClick(i)} />
+              onClick={(i, row, col) => this.handleClick(i, row, col)} />
           </div>
           <div className="game-info">
             <div><em>Moves displayed in (col, row) format.</em></div>
             <div>{status}</div>
             <ol>{moves}</ol>
+            <div>
+              <button onClick={() => this.toggleOrder()}>
+                {this.state.toggleText}
+              </button>
+              </div>
           </div>
         </div>
       );
